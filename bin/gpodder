@@ -1,0 +1,216 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#
+# gPodder - A media aggregator and podcast client
+# Copyright (c) 2005-2010 Thomas Perl and the gPodder Team
+#
+# gPodder is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# gPodder is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+gPodder enables you to subscribe to RSS feeds and download
+podcast episodes from these feeds.
+
+Downloaded podcasts can either be synchronized to portable
+MP3 players (including iPods) or played back on the user's
+desktop.
+
+The Maemo 4 and Maemo 5 environments will be automatically
+detected, and a suitable UI will be used. You can override
+this behaviour with the --maemo and --fremantle switches.
+
+See gpo(1) for the command-line interface.
+"""
+
+import sys
+import os
+import os.path
+import platform
+
+import gettext
+
+import subprocess
+
+try:
+    import dbus
+    import dbus.glib
+    have_dbus = True
+except ImportError:
+    print >>sys.stderr, """
+    Warning: python-dbus not found. Disabling D-Bus support.
+    """
+    have_dbus = False
+
+from optparse import OptionParser
+
+if __name__ == '__main__':
+    # Paths to important files
+    gpodder_script = sys.argv[0]
+    while os.path.islink(gpodder_script):
+        gpodder_script = os.readlink(gpodder_script)
+    gpodder_dir = os.path.join(os.path.dirname(gpodder_script), '..')
+    prefix = os.path.abspath(os.path.normpath(gpodder_dir))
+
+    src_dir = os.path.join(prefix, 'src')
+    data_dir = os.path.join(prefix, 'data')
+    locale_dir = os.path.join(prefix, 'share', 'locale')
+    ui_folder = os.path.join(prefix, 'share', 'gpodder', 'ui')
+    credits_file = os.path.join(prefix, 'share', 'gpodder', 'credits.txt')
+    images_folder = os.path.join(prefix, 'share', 'gpodder')
+    icon_file = os.path.join(prefix, 'share', 'icons', 'hicolor', 'scalable', 'apps', 'gpodder.svg')
+
+    # The existence of this file tells us we're running on Maemo
+    maemo_file = os.path.join(prefix, 'share', 'applications', 'hildon', 'gpodder.desktop')
+
+    if os.path.exists(src_dir) and os.path.exists(data_dir) and \
+            not prefix.startswith('/usr'):
+        # Run gPodder from local source folder (not installed)
+        print >>sys.stderr, 'Using modules from', src_dir
+        sys.path.insert(0, src_dir)
+        print >>sys.stderr, 'Using resources from', data_dir
+        locale_dir = os.path.join(data_dir, 'locale')
+        ui_folder = os.path.join(data_dir, 'ui')
+        credits_file = os.path.join(data_dir, 'credits.txt')
+        images_folder = os.path.join(data_dir, 'images')
+        icon_file = os.path.join(data_dir, 'gpodder.svg')
+
+    # on Mac OS X, read from the defaults database the locale of the user
+    if platform.system() == 'Darwin' and 'LANG' not in os.environ:
+        locale_cmd = ('defaults', 'read', 'NSGlobalDomain', 'AppleLocale')
+        process = subprocess.Popen(locale_cmd, stdout=subprocess.PIPE)
+        output, error_output = process.communicate()
+        # the output is a string like 'fr_FR', and we need 'fr_FR.utf-8'
+        user_locale = output.strip() + '.UTF-8'
+        os.environ['LANG'] = user_locale
+        print >>sys.stderr, 'Setting locale to', user_locale
+
+    # Set up the path to translation files
+    gettext.bindtextdomain('gpodder', locale_dir)
+
+    import gpodder
+
+    # Enable i18n for gPodder translations
+    _ = gpodder.gettext
+
+    # Set up paths to folder with GtkBuilder files and gpodder.svg
+    gpodder.ui_folders.append(ui_folder)
+    gpodder.credits_file = credits_file
+    gpodder.images_folder = images_folder
+    gpodder.icon_file = icon_file
+
+    s_usage = 'usage: %%prog [options]\n\n%s' % ( __doc__.strip() )
+    s_version = '%%prog %s' % ( gpodder.__version__ )
+
+    parser = OptionParser( usage = s_usage, version = s_version)
+
+    parser.add_option("-v", "--verbose",
+                      action="store_true", dest="verbose", default=False,
+                      help=_("Print debugging output to stdout"))
+
+    parser.add_option("-m", "--maemo",
+                      action="store_true", dest="diablo", default=False,
+                      help=_("Force using the Maemo 4 user interface"))
+
+    parser.add_option("-f", "--fremantle",
+                      action="store_true", dest="fremantle", default=False,
+                      help=_("Force using the Maemo 5 user interface"))
+
+    parser.add_option('-s', '--subscribe', dest='subscribe', metavar='URL',
+                      help=_('Subscribe to the given URL'))
+
+    # On Mac OS X, support the "psn" parameter for compatibility (bug 939)
+    if sys.platform == 'darwin':
+        parser.add_option('-p', '--psn', dest='macpsn', metavar='PSN',
+                          help=_('Mac OS X application process number'))
+
+    (options, args) = parser.parse_args(sys.argv)
+
+    # Detect if we are running on Maemo 5 and if it's the case, do
+    # force the "fremantle" option on automatically, so that clueless
+    # users won't be reporting bogus bugs if they try to start gPodder
+    # from the command line without the "--fremantle" switch :)
+    if not options.fremantle and not options.diablo:
+        try:
+            etc_issue = open('/etc/issue').read()
+            if 'Maemo 5' in etc_issue:
+                options.fremantle = True
+                print >>sys.stderr, 'Auto-detected: Maemo 5 (--fremantle)'
+            elif 'Internet Tablet OS: maemo Linux based OS2008' in etc_issue:
+                options.diablo = True
+                print >>sys.stderr, 'Auto-detected: Maemo OS2008 (--maemo)'
+
+            del etc_issue
+        except:
+            pass
+
+    if options.fremantle or options.diablo:
+        gpodder.icon_file = gpodder.icon_file.replace('.svg', '.png')
+
+    if options.fremantle:
+        gpodder.ui.fremantle = True
+        gpodder.ui_folders.insert(0, os.path.join(ui_folder, 'frmntl'))
+    elif options.diablo or os.path.exists(maemo_file):
+        gpodder.ui.diablo = True
+        gpodder.ui_folders.insert(0, os.path.join(ui_folder, 'maemo'))
+    else:
+        gpodder.ui.desktop = True
+        gpodder.ui_folders.insert(0, os.path.join(ui_folder, 'desktop'))
+
+    if options.verbose:
+        from gpodder.liblogger import enable_verbose
+        enable_verbose()
+
+    if have_dbus:
+        # Try to find an already-running instance of gPodder
+        session_bus = dbus.SessionBus()
+
+        # Obtain a reference to an existing instance; don't call get_object if
+        # such an instance doesn't exist as it *will* create a new instance
+        if session_bus.name_has_owner(gpodder.dbus_bus_name):
+            try:
+                remote_object = session_bus.get_object(gpodder.dbus_bus_name, \
+                        gpodder.dbus_gui_object_path)
+            except dbus.exceptions.DBusException:
+                remote_object = None
+        else:
+            remote_object = None
+    else:
+        # No D-Bus available :/
+        remote_object = None
+
+    if remote_object is not None:
+        # An instance of GUI is already running
+        print >>sys.stderr, 'Existing instance running - activating via D-Bus.'
+        remote_object.show_gui_window(dbus_interface=gpodder.dbus_interface)
+        if options.subscribe:
+            remote_object.subscribe_to_url(options.subscribe)
+    else:
+        # gPodder is not yet running - create new instance
+        from gpodder import gui
+
+        # check if we have an X11 connection (but not on Windows)
+        if platform.system() != 'Windows' and \
+                not os.environ.get('DISPLAY', None):
+            print >>sys.stderr, 'Cannot start gPodder: $DISPLAY is not set.'
+            sys.exit(1)
+
+        if gpodder.ui.maemo:
+            # Reduce our nice value to zero if we're on Maemo to
+            # make the tablet not kill itself while updating feeds
+            if os.nice(0) < 0:
+                os.nice(-os.nice(0))
+
+        gui.main(options)
+

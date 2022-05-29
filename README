@@ -1,0 +1,150 @@
+                               _
+                           _  | \ _   _|  _|  _   _
+                          / \ |_// \ / | / | /_| |
+                          \_/ |  \_/ \_| \_| \_  |
+                         ._/      http://gpodder.org/
+
+           - -- == === ================================= === == -- -
+             Copyright  2005-2010 Thomas Perl and the gPodder Team
+
+ ==========================
+ License (see COPYING file)
+ ==========================
+
+ gPodder is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ gPodder is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+ ============
+ Dependencies
+ ============
+
+   * python (>= 2.5) with sqlite3 support
+   * python-gtk2 (>= 2.12)
+   * python-feedparser
+   * python-mygpoclient (>= 1.4; http://thpinfo.com/2010/mygpoclient/)
+   * python-dbus (optional, but highly recommended)
+
+ If your Python installation does not come with "sqlite3" support,
+ you can either re-compile Python with support for sqlite3 or use
+ the "pysqlite" package from http://code.google.com/p/pysqlite/
+
+ Additional dependencies for iPod synchronization support:
+
+   * python-gpod (libgpod's Python bindings)
+   * At least one of the following packages:
+     - python-gst0.10 (GStreamer Python bindings)
+     - mplayer (recommended for video podcasts)
+     - python-eyed3 (eyeD3 library)
+
+ Additional dependencies for MTP-based device synchronization support:
+
+   * libmtp (>= 1.0.0)
+     Please note that the previously-required "pymtp" module is now included in
+     the gPodder distribution as "gpodder.gpopymtp", and therefore no longer
+     needed as special dependency. You still need a recent version of libmtp.
+
+ Additional dependencies for converting OGGs to MP3s on iPod sync:
+ 
+   * oggdec (for decoding OGG files)
+   * lame (for encoding MP3 files)
+
+ Additional dependencies if you want Bluetooth file send support:
+
+   * gnome-obex-send OR bluetooth-sendto
+
+ Additional dependencies if you want Rockbox Cover Art syncing:
+
+   * python-imaging (Python Imaging Library, PIL)
+
+ Additional dependencies for HTML episode shownotes:
+
+   * python-webkit (Python bindings for WebKitGTK+)
+
+ Additional dependencies for gPodder on Windows:
+
+   * PyWin32 (http://sourceforge.net/projects/pywin32/)
+
+ Additional dependencies for gPodder on Mac OS X:
+
+   * ige-mac-integration (optional; when using the quartz GDK backend)
+
+ Additional dependencies for the Soundcloud plug-in:
+
+   * Python >= 2.6 (as this includes the "json" module) OR
+   * Python < 2.6 with the "simplejson" module (Debian: python-simplejson)
+
+ Additional dependencies if you want to install from source:
+ 
+   * help2man
+   * python-dev
+   * intltool
+
+ Dependencies for running unittest/doctests ("make unittest"):
+
+   * python-minimock
+   * python-coverage (optional; recommended)
+
+ ============
+ Installation
+ ============
+
+ Extract the tar archive somewhere into your home directory and cd into 
+ the directory where you extracted it, for example:
+
+   tar xzvf gpodder-2.9.tar.gz
+   cd gpodder-2.9/
+   make install
+
+ If you have any problems, please visit the gPodder website or mail the 
+ gPodder mailing list (see below for more information).
+
+ ================================
+ Portable mode / roaming profiles
+ ================================
+
+ You can set the environment variables GPODDER_HOME and GPODDER_DOWNLOAD_DIR
+ to point to locations for storing the database and downloaded files:
+
+    GPODDER_HOME ........... location for configuration and database
+    GPODDER_DOWNLOAD_DIR ... location for downloaded episodes
+
+ You can use this to have different configurations for gPodder or to put
+ gPodder's data directly on your MP3 player or USB disk, for example:
+
+    export GPODDER_HOME=/media/usbdisk/gpodder-data/
+    export GPODDER_DOWLOAD_DIR=/media/usbdisk/podcasts/
+    gpodder
+
+ =========================================
+ Feature requests, bug reports and patches
+ =========================================
+
+ Feature requests, bug report and patches should all be filed in our
+ Bugzilla at http://bugs.gpodder.org - for general discussion and questions,
+ please send a message to gpodder-devel (this is a subscriber-only list, so
+ you have to subscribe first before sending mail there).
+
+ For up to date information about gPodder, see the website and Wiki.
+
+   Homepage:       http://gpodder.org/
+   Wiki:           http://wiki.gpodder.org/
+   Bugzilla:       http://bugs.gpodder.org/
+
+   FAQs:           http://wiki.gpodder.org/wiki/FAQs
+   Mailing List:   gpodder-devel@berlios.de
+   IRC Channel:    #gpodder on FreeNode (irc.freenode.net)
+
+ Have fun with gPodder!
+ Thomas Perl <thpinfo.com>
+

@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<interface>
+  <object class="HildonStackableWindow" id="gPodderShownotes">
+    <property name="title" translatable="yes">Shownotes</property>
+    <child>
+      <object class="GtkVBox" id="vbox">
+        <property name="visible">True</property>
+        <property name="border_width">6</property>
+        <property name="spacing">0</property>
+        <child>
+          <object class="HildonPannableArea" id="scrolled_window">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <child>
+              <object class="HildonTextView" id="textview">
+                <property name="visible">True</property>
+                <property name="cursor-visible">False</property>
+                <property name="editable">False</property>
+                <property name="wrap_mode">word</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox_actions">
+            <property name="visible">True</property>
+            <child>
+              <object class="HildonButton" id="button_visit_website">
+                <property name="visible">True</property>
+                <property name="arrangement">HILDON_BUTTON_ARRANGEMENT_VERTICAL</property>
+                <property name="size">HILDON_SIZE_FINGER_HEIGHT</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAction" id="action_visit_website">
+    <property name="label" translatable="yes">Visit website</property>
+    <signal name="activate" handler="on_visit_website_button_clicked"/>
+  </object>
+</interface>
