@@ -11,7 +11,7 @@
 
 DOCS		= README
 
-PYTHON		= /usr/bin/python2.5
+PYTHON		= /usr/bin/python2.7
 SETUP		= TARGET=maemo ${PYTHON} setup.py
 
 DEBPACKAGE	= gpodder
