@@ -99,6 +99,9 @@ if __name__ == '__main__':
     # Set up the path to translation files
     gettext.bindtextdomain('gpodder', locale_dir)
 
+    import sys
+    sys.path.append('/opt/maemo/usr/lib/python2.7/site-packages')
+
     import gpodder
 
     # Enable i18n for gPodder translations
